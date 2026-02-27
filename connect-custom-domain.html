@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Pages · Domain Setup Wizard</title>
+    <!-- Tailwind CSS for modern, reliable layout -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            background-color: #f6f8fa;
+        }
+
+        .accordion-content {
+            display: none;
+        }
+        .accordion-trigger[aria-expanded="true"] + .accordion-content {
+            display: block;
+        }
+
+        .spinner {
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .domain-highlight {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            background: rgba(9, 105, 218, 0.1);
+            color: #0969da;
+            padding: 2px 4px;
+            border-radius: 4px;
+        }
+
+        #confetti-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+            display: none;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+<canvas id="confetti-canvas"></canvas>
+
+<div class="max-w-4xl mx-auto">
+    <!-- Header -->
+    <header class="bg-[#24292f] text-white p-4 rounded-t-lg flex items-center justify-between shadow-sm">
+        <div class="flex items-center gap-3">
+            <i data-lucide="github" class="w-6 h-6"></i>
+            <h1 class="text-lg font-semibold tracking-tight">Pages · Custom Domain Assistant</h1>
+        </div>
+        <div class="bg-white text-[#24292f] px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-sm">
+            <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
+            DNS VERIFICATION
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="bg-white border-x border-b border-[#d0d7de] rounded-b-lg p-6 shadow-sm">
+        
+        <!-- Onboarding Bar -->
+        <div class="bg-[#f6f8fa] border border-[#d0d7de] rounded-lg p-5 mb-6 flex flex-wrap items-center gap-4">
+            <div class="flex items-center gap-2 text-[#57606a] font-medium">
+                <i data-lucide="mouse-pointer-2" class="w-5 h-5"></i>
+                <span>Connect Domain</span>
+            </div>
+            <div class="flex flex-1 min-w-[280px] gap-2">
+                <input type="text" id="domainInput" class="flex-1 border border-[#d0d7de] rounded-md px-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g., projectfreedom.club" value="projectfreedom.club">
+                <button id="applyDomainBtn" class="bg-[#2da44e] hover:bg-[#2c974b] text-white px-4 py-1.5 rounded-md text-sm font-semibold flex items-center gap-2 transition-colors">
+                    <i data-lucide="refresh-cw" class="w-4 h-4"></i> Apply
+                </button>
+            </div>
+            <div class="bg-[#0969da] text-white px-4 py-1.5 rounded-full text-sm font-medium flex items-center gap-2 shadow-sm">
+                <i data-lucide="globe" class="w-4 h-4"></i>
+                <span id="domainDisplay">projectfreedom.club</span>
+            </div>
+        </div>
+
+        <!-- GitHub Username Input -->
+        <div class="bg-white border border-[#d0d7de] rounded-lg p-4 mb-6 flex flex-wrap items-center gap-4">
+            <div class="flex items-center gap-2 font-medium">
+                <i data-lucide="user" class="w-5 h-5 text-[#57606a]"></i>
+                <span>GitHub Username:</span>
+            </div>
+            <input type="text" id="githubUsername" class="border border-[#d0d7de] rounded-md px-3 py-1.5 text-sm w-full sm:w-64 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="yourusername" value="yourusername">
+            <span class="text-xs text-[#57606a] italic">(Used for CNAME generation)</span>
+        </div>
+
+        <!-- Notifications -->
+        <div id="notificationArea" class="mb-6 min-h-[56px]">
+            <div class="bg-[#ddf4ff] border border-[#54aeff] text-[#0969da] p-4 rounded-lg flex items-center gap-3">
+                <i data-lucide="info" class="w-5 h-5"></i>
+                <p class="text-sm">Enter your domain details above, then complete the 4 steps below.</p>
+            </div>
+        </div>
+
+        <!-- Steps Accordion -->
+        <div class="space-y-4 mb-8">
+            <!-- Step 1 -->
+            <div class="border border-[#d0d7de] rounded-lg overflow-hidden transition-all duration-200" id="step1Box">
+                <button class="accordion-trigger w-full flex items-center p-4 text-left hover:bg-gray-50 transition-colors" aria-expanded="true">
+                    <i data-lucide="circle" class="step-icon w-5 h-5 mr-3 text-[#57606a]"></i>
+                    <div class="flex-1">
+                        <span class="font-bold text-gray-900">1. Configure DNS Records</span>
+                        <span class="hidden sm:inline text-xs text-[#57606a] ml-2">Required for <span class="domain-highlight-text text-blue-600 font-mono">projectfreedom.club</span></span>
+                    </div>
+                    <i data-lucide="chevron-down" class="w-5 h-5 text-[#57606a]"></i>
+                </button>
+                <div class="accordion-content p-5 bg-[#f6f8fa] border-t border-[#d0d7de]">
+                    <p class="text-sm mb-4">Add these records at your DNS provider (Namecheap, Cloudflare, etc.):</p>
+                    <div class="overflow-x-auto border border-[#d0d7de] rounded-lg bg-white">
+                        <table class="w-full text-left text-sm">
+                            <thead class="bg-gray-50 text-xs uppercase font-bold text-gray-500 border-b border-[#d0d7de]">
+                                <tr>
+                                    <th class="px-4 py-2">Type</th>
+                                    <th class="px-4 py-2">Host</th>
+                                    <th class="px-4 py-2">Value</th>
+                                    <th class="px-4 py-2">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-[#d0d7de] font-mono">
+                                <tr><td class="px-4 py-3">A</td><td class="px-4 py-3">@</td><td class="px-4 py-3">185.199.108.153</td><td class="px-4 py-3"><button class="copy-btn flex items-center gap-1.5 px-2 py-1 border rounded hover:bg-gray-100 transition-colors text-xs" data-copy="185.199.108.153"><i data-lucide="copy" class="w-3.5 h-3.5"></i> Copy</button></td></tr>
+                                <tr><td class="px-4 py-3">A</td><td class="px-4 py-3">@</td><td class="px-4 py-3">185.199.109.153</td><td class="px-4 py-3"><button class="copy-btn flex items-center gap-1.5 px-2 py-1 border rounded hover:bg-gray-100 transition-colors text-xs" data-copy="185.199.109.153"><i data-lucide="copy" class="w-3.5 h-3.5"></i> Copy</button></td></tr>
+                                <tr><td class="px-4 py-3">A</td><td class="px-4 py-3">@</td><td class="px-4 py-3">185.199.110.153</td><td class="px-4 py-3"><button class="copy-btn flex items-center gap-1.5 px-2 py-1 border rounded hover:bg-gray-100 transition-colors text-xs" data-copy="185.199.110.153"><i data-lucide="copy" class="w-3.5 h-3.5"></i> Copy</button></td></tr>
+                                <tr><td class="px-4 py-3">A</td><td class="px-4 py-3">@</td><td class="px-4 py-3">185.199.111.153</td><td class="px-4 py-3"><button class="copy-btn flex items-center gap-1.5 px-2 py-1 border rounded hover:bg-gray-100 transition-colors text-xs" data-copy="185.199.111.153"><i data-lucide="copy" class="w-3.5 h-3.5"></i> Copy</button></td></tr>
+                                <tr><td class="px-4 py-3">CNAME</td><td class="px-4 py-3">www</td><td class="px-4 py-3 cname-val">yourusername.github.io</td><td class="px-4 py-3"><button class="copy-btn flex items-center gap-1.5 px-2 py-1 border rounded hover:bg-gray-100 transition-colors text-xs" id="copyCnameBtn" data-copy="yourusername.github.io"><i data-lucide="copy" class="w-3.5 h-3.5"></i> Copy</button></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <button class="step-check mt-4 bg-white border border-[#d0d7de] hover:border-[#2da44e] px-4 py-1.5 rounded-md text-sm font-semibold flex items-center gap-2 transition-all shadow-sm" data-step="1">
+                        <i data-lucide="check" class="w-4 h-4 text-green-600"></i> Mark Step 1 Done
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 2 -->
+            <div class="border border-[#d0d7de] rounded-lg overflow-hidden transition-all duration-200" id="step2Box">
+                <button class="accordion-trigger w-full flex items-center p-4 text-left hover:bg-gray-50 transition-colors" aria-expanded="false">
+                    <i data-lucide="circle" class="step-icon w-5 h-5 mr-3 text-[#57606a]"></i>
+                    <span class="flex-1 font-bold text-gray-900 text-sm md:text-base">2. Provider Specific Tweaks</span>
+                    <i data-lucide="chevron-down" class="w-5 h-5 text-[#57606a]"></i>
+                </button>
+                <div class="accordion-content p-5 bg-[#f6f8fa] border-t border-[#d0d7de]">
+                    <div class="bg-[#fff8c5] border border-[#f0b400] text-[#9a6700] p-3 rounded-lg flex items-start gap-3 text-sm mb-4">
+                        <i data-lucide="alert-triangle" class="w-5 h-5 flex-shrink-0 mt-0.5"></i>
+                        <div><strong>Cloudflare Users:</strong> Set your Proxy status to "DNS Only" (Gray Cloud). GitHub won't verify if it's Orange-clouded initially.</div>
+                    </div>
+                    <ul class="space-y-2 text-sm text-gray-700">
+                        <li class="flex items-center gap-2"><i data-lucide="arrow-right" class="w-4 h-4"></i> <strong>GoDaddy:</strong> Ensure no other "A" records exist for "@".</li>
+                        <li class="flex items-center gap-2"><i data-lucide="arrow-right" class="w-4 h-4"></i> <strong>Namecheap:</strong> Host for CNAME is "www", not your full domain.</li>
+                    </ul>
+                    <button class="step-check mt-4 bg-white border border-[#d0d7de] hover:border-[#2da44e] px-4 py-1.5 rounded-md text-sm font-semibold flex items-center gap-2 transition-all shadow-sm" data-step="2">
+                        <i data-lucide="check" class="w-4 h-4 text-green-600"></i> Mark Step 2 Done
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 3 -->
+            <div class="border border-[#d0d7de] rounded-lg overflow-hidden transition-all duration-200" id="step3Box">
+                <button class="accordion-trigger w-full flex items-center p-4 text-left hover:bg-gray-50 transition-colors" aria-expanded="false">
+                    <i data-lucide="circle" class="step-icon w-5 h-5 mr-3 text-[#57606a]"></i>
+                    <span class="flex-1 font-bold text-gray-900 text-sm md:text-base">3. Update Repo Settings</span>
+                    <i data-lucide="chevron-down" class="w-5 h-5 text-[#57606a]"></i>
+                </button>
+                <div class="accordion-content p-5 bg-[#f6f8fa] border-t border-[#d0d7de]">
+                    <p class="text-sm text-gray-700 mb-4">Go to your GitHub repo <strong>Settings &rarr; Pages</strong>. Enter your domain:</p>
+                    <div class="bg-gray-800 text-green-400 p-3 rounded-md font-mono text-sm mb-4 inline-block">
+                        <span class="domain-display-raw">projectfreedom.club</span>
+                    </div>
+                    <p class="text-xs text-[#57606a]">Click <strong>Save</strong> and wait for the "DNS check in progress" message.</p>
+                    <button class="step-check mt-4 bg-white border border-[#d0d7de] hover:border-[#2da44e] px-4 py-1.5 rounded-md text-sm font-semibold flex items-center gap-2 transition-all shadow-sm" data-step="3">
+                        <i data-lucide="check" class="w-4 h-4 text-green-600"></i> Mark Step 3 Done
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 4 -->
+            <div class="border border-[#d0d7de] rounded-lg overflow-hidden transition-all duration-200" id="step4Box">
+                <button class="accordion-trigger w-full flex items-center p-4 text-left hover:bg-gray-50 transition-colors" aria-expanded="false">
+                    <i data-lucide="circle" class="step-icon w-5 h-5 mr-3 text-[#57606a]"></i>
+                    <span class="flex-1 font-bold text-gray-900 text-sm md:text-base">4. Enforce HTTPS</span>
+                    <i data-lucide="chevron-down" class="w-5 h-5 text-[#57606a]"></i>
+                </button>
+                <div class="accordion-content p-5 bg-[#f6f8fa] border-t border-[#d0d7de]">
+                    <p class="text-sm text-gray-700 mb-4">Once the certificate is issued (can take up to 24h, usually 15 mins), check "Enforce HTTPS".</p>
+                    <div class="flex items-center gap-3 bg-white p-3 rounded border border-[#d0d7de]">
+                        <div class="w-4 h-4 rounded border border-blue-500 bg-blue-500 flex items-center justify-center"><i data-lucide="check" class="w-3 h-3 text-white"></i></div>
+                        <span class="text-sm font-semibold">Enforce HTTPS</span>
+                    </div>
+                    <button class="step-check mt-4 bg-white border border-[#d0d7de] hover:border-[#2da44e] px-4 py-1.5 rounded-md text-sm font-semibold flex items-center gap-2 transition-all shadow-sm" data-step="4">
+                        <i data-lucide="check" class="w-4 h-4 text-green-600"></i> Mark Step 4 Done
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Verification Actions -->
+        <div class="flex flex-wrap items-center justify-between gap-4 border-t border-[#d0d7de] pt-6">
+            <div class="flex items-center gap-3">
+                <button id="verifyDnsBtn" class="bg-[#0969da] hover:bg-[#0860ca] text-white px-5 py-2 rounded-md font-semibold text-sm flex items-center gap-2 shadow-md transition-all active:scale-95">
+                    <i data-lucide="activity" class="w-4 h-4"></i> Verify DNS Records
+                </button>
+                <div class="bg-gray-100 px-3 py-1.5 rounded-full text-xs font-medium text-[#57606a] border border-[#d0d7de] flex items-center gap-1.5">
+                    <i data-lucide="clipboard-check" class="w-3.5 h-3.5"></i>
+                    <span id="stepCounter">Steps Completed: 0/4</span>
+                </div>
+            </div>
+            <button id="resetProgressBtn" class="text-xs text-red-500 hover:text-red-700 font-semibold flex items-center gap-1 transition-colors">
+                <i data-lucide="rotate-ccw" class="w-3 h-3"></i> Reset Progress
+            </button>
+        </div>
+    </main>
+
+    <!-- Footer Links -->
+    <footer class="mt-6 flex flex-wrap items-center justify-between text-sm text-[#57606a] px-2">
+        <div class="flex items-center gap-4">
+            <a href="https://docs.github.com/en/pages" target="_blank" class="hover:text-blue-600 flex items-center gap-1.5 transition-colors underline decoration-dotted">
+                <i data-lucide="book-open" class="w-4 h-4"></i> Documentation
+            </a>
+            <a href="https://github.com/contact" target="_blank" class="hover:text-blue-600 flex items-center gap-1.5 transition-colors underline decoration-dotted">
+                <i data-lucide="help-circle" class="w-4 h-4"></i> Support
+            </a>
+        </div>
+        <p class="italic text-xs mt-2 md:mt-0 opacity-75">Not affiliated with GitHub Inc.</p>
+    </footer>
+</div>
+
+<script>
+    (function() {
+        // Init icons
+        lucide.createIcons();
+
+        // Elements
+        const domainInput = document.getElementById('domainInput');
+        const applyBtn = document.getElementById('applyDomainBtn');
+        const domainDisplay = document.getElementById('domainDisplay');
+        const githubUsername = document.getElementById('githubUsername');
+        const cnameVals = document.querySelectorAll('.cname-val');
+        const notifyArea = document.getElementById('notificationArea');
+        const verifyBtn = document.getElementById('verifyDnsBtn');
+        const stepCounter = document.getElementById('stepCounter');
+        const resetBtn = document.getElementById('resetProgressBtn');
+
+        let state = {
+            domain: 'projectfreedom.club',
+            username: 'yourusername',
+            steps: { 1: false, 2: false, 3: false, 4: false }
+        };
+
+        const GITHUB_IPS = ['185.199.108.153', '185.199.109.153', '185.199.110.153', '185.199.111.153'];
+
+        // Logic
+        function updateUI() {
+            state.domain = domainInput.value.trim() || 'projectfreedom.club';
+            state.username = githubUsername.value.trim() || 'yourusername';
+
+            domainDisplay.textContent = state.domain;
+            document.querySelector('.domain-highlight-text').textContent = state.domain;
+            document.querySelector('.domain-display-raw').textContent = state.domain;
+            
+            const cnameStr = `${state.username}.github.io`;
+            cnameVals.forEach(el => el.textContent = cnameStr);
+            document.getElementById('copyCnameBtn').setAttribute('data-copy', cnameStr);
+            
+            const count = Object.values(state.steps).filter(v => v).length;
+            stepCounter.textContent = `Steps Completed: ${count}/4`;
+        }
+
+        applyBtn.addEventListener('click', () => {
+            updateUI();
+            showNotification('success', `Application updated for <strong>${state.domain}</strong>.`);
+        });
+
+        githubUsername.addEventListener('input', updateUI);
+
+        function showNotification(type, message) {
+            const colors = {
+                success: 'bg-green-100 border-green-500 text-green-700',
+                danger: 'bg-red-100 border-red-500 text-red-700',
+                info: 'bg-blue-100 border-blue-500 text-blue-700',
+                warning: 'bg-yellow-100 border-yellow-500 text-yellow-700'
+            };
+            const icons = { success: 'check-circle', danger: 'x-circle', info: 'info', warning: 'alert-circle' };
+            
+            notifyArea.innerHTML = `
+                <div class="${colors[type]} border p-4 rounded-lg flex items-center gap-3 transition-all">
+                    <i data-lucide="${icons[type]}" class="w-5 h-5 flex-shrink-0"></i>
+                    <p class="text-sm">${message}</p>
+                </div>
+            `;
+            lucide.createIcons();
+        }
+
+        // Accordion Toggle
+        document.querySelectorAll('.accordion-trigger').forEach(trigger => {
+            trigger.addEventListener('click', () => {
+                const box = trigger.parentElement;
+                const isExpanded = trigger.getAttribute('aria-expanded') === 'true';
+                trigger.setAttribute('aria-expanded', !isExpanded);
+            });
+        });
+
+        // Mark Step Done
+        document.querySelectorAll('.step-check').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const step = btn.getAttribute('data-step');
+                state.steps[step] = true;
+                
+                const box = document.getElementById(`step${step}Box`);
+                box.classList.add('bg-green-50', 'border-green-300');
+                const icon = box.querySelector('.step-icon');
+                icon.setAttribute('data-lucide', 'check-circle-2');
+                icon.classList.remove('text-[#57606a]');
+                icon.classList.add('text-green-600');
+                
+                btn.innerHTML = `<i data-lucide="check-circle" class="w-4 h-4"></i> Done`;
+                btn.classList.add('opacity-50', 'cursor-not-allowed');
+                btn.disabled = true;
+
+                updateUI();
+                lucide.createIcons();
+            });
+        });
+
+        // Reset
+        resetBtn.addEventListener('click', () => {
+            state.steps = { 1: false, 2: false, 3: false, 4: false };
+            document.querySelectorAll('.accordion-box, div[id$="Box"]').forEach(box => {
+                box.classList.remove('bg-green-50', 'border-green-300');
+                const icon = box.querySelector('.step-icon');
+                if(icon) {
+                    icon.setAttribute('data-lucide', 'circle');
+                    icon.classList.remove('text-green-600');
+                    icon.classList.add('text-[#57606a]');
+                }
+                const btn = box.querySelector('.step-check');
+                if(btn) {
+                    btn.disabled = false;
+                    btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    const stepNum = btn.getAttribute('data-step');
+                    btn.innerHTML = `<i data-lucide="check" class="w-4 h-4 text-green-600"></i> Mark Step ${stepNum} Done`;
+                }
+            });
+            updateUI();
+            showNotification('info', 'Progress has been reset.');
+        });
+
+        // Verify DNS
+        verifyBtn.addEventListener('click', async () => {
+            const doneCount = Object.values(state.steps).filter(v => v).length;
+            if (doneCount < 4) {
+                showNotification('warning', 'Please complete all steps before final verification.');
+                return;
+            }
+
+            verifyBtn.disabled = true;
+            const original = verifyBtn.innerHTML;
+            verifyBtn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 spinner"></i> Fetching DNS...`;
+            lucide.createIcons();
+
+            try {
+                const apexUrl = `https://dns.google/resolve?name=${state.domain}&type=A`;
+                const wwwUrl = `https://dns.google/resolve?name=www.${state.domain}&type=CNAME`;
+                
+                const [apexRes, wwwRes] = await Promise.all([fetch(apexUrl), fetch(wwwUrl)]);
+                const apexData = await apexRes.json();
+                const wwwData = await wwwRes.json();
+
+                let issues = [];
+                let apexMatch = false;
+                if (apexData.Answer) {
+                    apexMatch = apexData.Answer.some(a => GITHUB_IPS.includes(a.data));
+                } else {
+                    issues.push("Apex A records not found");
+                }
+
+                let wwwMatch = false;
+                if (wwwData.Answer) {
+                    const cname = wwwData.Answer[0].data.toLowerCase().replace(/\.$/, '');
+                    wwwMatch = (cname === `${state.username}.github.io`.toLowerCase());
+                } else {
+                    issues.push("www CNAME record not found");
+                }
+
+                if (apexMatch && wwwMatch) {
+                    showNotification('success', '<strong>Configuration Correct!</strong> Your domain is properly connected to GitHub.');
+                    triggerConfetti();
+                } else {
+                    showNotification('danger', `<strong>Issue Detected:</strong> ${issues.length > 0 ? issues.join(', ') : 'Records exist but don\'t match GitHub requirements.'}`);
+                }
+
+            } catch (err) {
+                showNotification('danger', 'Error connecting to DNS lookup service. Please try again later.');
+            } finally {
+                verifyBtn.disabled = false;
+                verifyBtn.innerHTML = original;
+                lucide.createIcons();
+            }
+        });
+
+        // Copy Helper
+        document.body.addEventListener('click', (e) => {
+            const btn = e.target.closest('.copy-btn');
+            if (!btn) return;
+            const text = btn.getAttribute('data-copy');
+            navigator.clipboard.writeText(text).then(() => {
+                const original = btn.innerHTML;
+                btn.innerHTML = `<i data-lucide="check" class="w-3.5 h-3.5"></i> Copied!`;
+                lucide.createIcons();
+                setTimeout(() => { btn.innerHTML = original; lucide.createIcons(); }, 1500);
+            });
+        });
+
+        // Confetti
+        function triggerConfetti() {
+            const canvas = document.getElementById('confetti-canvas');
+            canvas.style.display = 'block';
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            
+            const particles = Array.from({ length: 100 }, () => ({
+                x: Math.random() * canvas.width,
+                y: -10,
+                color: `hsl(${Math.random() * 360}, 70%, 50%)`,
+                speed: Math.random() * 4 + 2,
+                r: Math.random() * 6 + 2
+            }));
+
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                let alive = false;
+                particles.forEach(p => {
+                    p.y += p.speed;
+                    if (p.y < canvas.height) alive = true;
+                    ctx.fillStyle = p.color;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+                if (alive) requestAnimationFrame(animate);
+                else canvas.style.display = 'none';
+            }
+            animate();
+        }
+
+    })();
+</script>
+</body>
+</html>
