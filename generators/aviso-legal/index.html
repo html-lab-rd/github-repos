@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador Legal RD</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'ui-sans-serif', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Estilos base para asegurar que la impresión se vea perfecta */
+        @media print {
+            body { background-color: white !important; }
+            .print\:hidden { display: none !important; }
+            .print\:w-full { width: 100% !important; max-width: none !important; }
+            .print\:p-0 { padding: 0 !important; }
+            .print\:m-0 { margin: 0 !important; }
+            .print\:border-none { border: none !important; }
+            .print\:shadow-none { box-shadow: none !important; }
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-slate-50 font-sans text-slate-800">
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed top-5 left-1/2 transform -translate-x-1/2 z-50 bg-slate-900 text-white px-6 py-3 rounded-full shadow-lg flex items-center space-x-2 transition-all duration-300 opacity-0 pointer-events-none translate-y-[-20px]">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-400"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+        <span id="toast-message" class="font-medium">Mensaje</span>
+    </div>
+
+    <!-- Header - Hidden in Print -->
+    <header class="bg-slate-800 text-white p-6 shadow-md print:hidden">
+        <div class="max-w-7xl mx-auto flex items-center gap-3">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-300"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"></path><path d="m9 12 2 2 4-4"></path></svg>
+            <div>
+                <h1 class="text-2xl font-bold tracking-tight">Generador Legal Multi-Región</h1>
+                <p class="text-slate-300 text-sm">Avisos Legales y Políticas de Privacidad adaptables</p>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto p-4 md:p-6 lg:flex lg:gap-8">
+        
+        <!-- Left Column: Form - Hidden in Print -->
+        <section class="lg:w-1/3 bg-white p-6 rounded-xl shadow-sm border border-slate-200 mb-6 lg:mb-0 print:hidden shrink-0">
+            <h2 class="text-xl font-bold mb-6 text-slate-800 flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-indigo-600"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><line x1="10" y1="9" x2="8" y2="9"></line></svg>
+                Datos del Documento
+            </h2>
+            
+            <form id="legal-form" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Jurisdicción / Región</label>
+                    <select id="region" name="region" class="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white">
+                        <option value="do">República Dominicana (Ley 172-13)</option>
+                        <option value="es">España / Unión Europea (RGPD)</option>
+                        <option value="us">United States (General / CCPA)</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Industria / Tipo de Sitio</label>
+                    <select id="industria" name="industria" class="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white">
+                        <option value="general">Sitio Web General / Blog</option>
+                        <option value="ecommerce">Comercio Electrónico / SaaS</option>
+                        <option value="salud">Salud y Bienestar (Datos Sensibles)</option>
+                        <option value="financiero">Servicios Financieros / Legales</option>
+                    </select>
+                </div>
+
+                <hr class="border-slate-100" />
+
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Nombre de la Empresa o Persona</label>
+                    <input type="text" id="nombre" name="nombre" placeholder="Ej. Mi Empresa S.R.L. / LLC" class="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">ID Fiscal (RNC, NIF/CIF, EIN)</label>
+                    <input type="text" id="rnc" name="rnc" placeholder="Ej. 130-12345-1 / B12345678" class="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">URL del Sitio Web</label>
+                    <input type="text" id="url" name="url" placeholder="Ej. https://www.miempresa.com" class="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Dirección Completa</label>
+                    <input type="text" id="direccion" name="direccion" placeholder="Ej. Calle Principal 123, Ciudad, País" class="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Correo Electrónico de Contacto</label>
+                    <input type="email" id="email" name="email" placeholder="Ej. legal@miempresa.com" class="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Teléfono (Opcional)</label>
+                    <input type="text" id="telefono" name="telefono" placeholder="Ej. +1 809-555-5555" class="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
+                </div>
+
+                <!-- Campos adicionales dinámicos -->
+                <div id="supervision-container" class="bg-indigo-50 p-4 rounded-lg border border-indigo-100 hidden">
+                    <label class="block text-sm font-medium text-indigo-900 mb-1">Entidad Supervisora</label>
+                    <input type="text" id="supervision" name="supervision" placeholder="Ej. Superintendencia de Bancos (SIB)" class="w-full p-2.5 border border-indigo-200 rounded-lg focus:ring-2 focus:ring-indigo-500" />
+                </div>
+
+                <div id="registro-container" class="bg-indigo-50 p-4 rounded-lg border border-indigo-100 hidden">
+                    <label class="block text-sm font-medium text-indigo-900 mb-1">Registro Mercantil (ES/EU)</label>
+                    <input type="text" id="registro" name="registro" placeholder="Ej. Tomo X, Folio Y, Hoja Z" class="w-full p-2.5 border border-indigo-200 rounded-lg focus:ring-2 focus:ring-indigo-500" />
+                </div>
+            </form>
+        </section>
+
+        <!-- Right Column: Preview & Actions -->
+        <section class="lg:w-2/3 flex flex-col print:w-full print:m-0 print:p-0">
+            
+            <!-- Action Bar - Hidden in Print -->
+            <div class="bg-white p-4 rounded-t-xl border border-b-0 border-slate-200 flex flex-wrap gap-3 items-center justify-between print:hidden">
+                <div class="flex items-center gap-2 text-slate-500 text-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                    <span>Vista previa en tiempo real</span>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                    <button id="btn-copy" class="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-lg transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                        Copiar Texto
+                    </button>
+                    <button id="btn-download" class="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-lg transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                        TXT
+                    </button>
+                    <button id="btn-print" class="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition-colors shadow-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                        Guardar PDF
+                    </button>
+                </div>
+            </div>
+
+            <!-- Document Paper Canvas -->
+            <div id="preview-container" class="bg-white p-8 md:p-12 border border-slate-200 rounded-b-xl shadow-sm flex-grow print:border-none print:shadow-none print:p-0">
+                <!-- Preview content generated via JS -->
+            </div>
+
+        </section>
+    </main>
+
+    <script>
+        // State
+        const formData = {
+            region: 'do', url: '', nombre: '', rnc: '', direccion: '', email: '', telefono: '', industria: 'general', supervision: '', registro: ''
+        };
+        let isFirstRun = true;
+
+        // Elements
+        const form = document.getElementById('legal-form');
+        const inputs = form.querySelectorAll('input, select');
+        const previewContainer = document.getElementById('preview-container');
+        const supervisionContainer = document.getElementById('supervision-container');
+        const registroContainer = document.getElementById('registro-container');
+        const toast = document.getElementById('toast');
+        const toastMessage = document.getElementById('toast-message');
+        
+        // Toast logic
+        let toastTimeout;
+        function showToast(message) {
+            toastMessage.textContent = message;
+            toast.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-[-20px]');
+            toast.classList.add('opacity-100', 'translate-y-0');
+            
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.classList.remove('opacity-100', 'translate-y-0');
+                toast.classList.add('opacity-0', 'pointer-events-none', 'translate-y-[-20px]');
+            }, 3000);
+        }
+
+        // Generate Text Logic
+        function getDocumentText(data, isPreview = false) {
+            const { region, url, nombre, rnc, direccion, email, telefono, industria, supervision, registro } = data;
+
+            const badgeEco = isPreview ? ' ::BADGE_ECO::' : '';
+            const badgeSalud = isPreview ? ' ::BADGE_SALUD::' : '';
+            const badgeFin = isPreview ? ' ::BADGE_FIN::' : '';
+
+            const pUrl = url || 'https://en.wikipedia.org/wiki/Website';
+            const pNombre = nombre || '[Nombre de la Empresa / Company Name]';
+            const pRnc = rnc || '[ID Fiscal / Tax ID]';
+            const pDireccion = direccion || '[Dirección / Address]';
+            const pEmail = email || '[Email]';
+            const pTelefono = telefono || '[Teléfono / Phone]';
+            const pRegistro = registro || '[Detalles de Registro Mercantil, ej: "Inscrita en el Registro Mercantil de Madrid, Tomo X, Folio Y, Hoja Z"]';
+
+            let text = '';
+
+            // --------------------------------------------------------------------------------
+            // TEMPLATE: ESPAÑA / EU (RGPD)
+            // --------------------------------------------------------------------------------
+            if (region === 'es') {
+                text += `**Document Title: LEGAL NOTICE, TERMS OF USE, AND PRIVACY POLICY**\n\n`;
+                text += `This document regulates the use of the website ${pUrl} (hereinafter, the "WEBSITE") owned by ${pNombre} (hereinafter, the "COMPANY").\n\n`;
+                text += `--- \n\n`;
+                text += `### PART 1: LEGAL NOTICE & TERMS OF USE\n\n`;
+                
+                text += `#### 1. IDENTIFICATION DETAILS OF THE COMPANY\n\n`;
+                text += `In compliance with the duty of information contained in Article 10 of Law 34/2002, of July 11, on Information Society Services and Electronic Commerce, we hereby inform you that:\n\n`;
+                text += `- **Company Name:** ${pNombre}\n`;
+                text += `- **Tax ID (NIF/CIF):** ${pRnc}\n`;
+                text += `- **Registered Address:** ${pDireccion}\n`;
+                text += `- **Email:** ${pEmail}\n`;
+                text += `- **Phone:** ${pTelefono}\n`;
+                text += `- **Commercial Registry Details:** ${pRegistro}\n\n`;
+
+                text += `#### 2. OBJECT AND SCOPE OF APPLICATION\n\n`;
+                text += `These conditions regulate the access, browsing, and use of the WEBSITE, as well as the responsibilities derived from the use of its content (hereinafter, the "CONTENTS"), such as texts, graphics, images, designs, code, software, links, and any other material.\n\n`;
+                text += `Access to and use of the WEBSITE implies that the user (hereinafter, the "USER") fully accepts these conditions. The COMPANY may modify these conditions at any time, and they will be binding from the moment they are published on the WEBSITE.\n\n`;
+
+                text += `#### 3. INTELLECTUAL AND INDUSTRIAL PROPERTY\n\n`;
+                text += `All intellectual and industrial property rights over the WEBSITE and its CONTENTS are owned by the COMPANY or by third parties who have authorized their use. The COMPANY holds the exclusive right to exploit them in any form, and in particular, the rights of reproduction, distribution, public communication, and transformation.\n\n`;
+                text += `**The USER is only authorized to:**\n\n`;
+                text += `- View and access the CONTENTS.\n`;
+                text += `- Download or copy the CONTENTS exclusively for their personal and private use, provided that the elements are not subsequently transferred to third parties or installed on a network.\n\n`;
+                text += `Any other use not expressly authorized by the COMPANY is strictly prohibited, including the reproduction, modification, distribution, or public communication of the CONTENTS. The USER must refrain from deleting, altering, evading, or manipulating any protection device or security systems installed on the WEBSITE.\n\n`;
+
+                text += `#### 4. USER OBLIGATIONS AND RESPONSIBILITIES\n\n`;
+                text += `The USER agrees to use the WEBSITE and the CONTENTS in accordance with the law, these conditions, and generally accepted moral and good customs. The USER shall refrain from:\n\n`;
+                text += `- Reproducing, copying, distributing, or publicly communicating the CONTENTS for commercial purposes.\n`;
+                text += `- Introducing or spreading computer viruses or any other systems that may damage the WEBSITE.\n`;
+                text += `- Attempting to access, use, or manipulate the data of the COMPANY or other users.\n`;
+                text += `- Using the CONTENTS to send advertising or communications for direct marketing purposes.\n\n`;
+                text += `The USER shall be liable for any damages of any nature that the COMPANY may suffer as a result of non-compliance with any of the obligations set forth herein.\n\n`;
+
+                if (industria === 'ecommerce') {
+                    text += `#### 4.1 ACCOUNT REGISTRATION AND SECURITY${badgeEco}\n\n`;
+                    text += `To access certain features of the WEBSITE, the USER may be required to create an account. The USER agrees to: (a) provide accurate, current, and complete information; (b) maintain and promptly update their account information; (c) maintain the security of their password and accept all risks of unauthorized access; and (d) immediately notify the COMPANY of any unauthorized use of their account. The COMPANY is not liable for any loss or damage arising from the USER's failure to comply with these obligations.\n\n`;
+                    text += `#### 4.2 PAYMENT TERMS${badgeEco}\n\n`;
+                    text += `For paid services, the USER agrees to pay all fees or charges to their account in accordance with the fees, charges, and billing terms in effect at the time a fee or charge is due and payable. All payments are non-refundable, except as expressly set forth in this agreement. The COMPANY uses third-party payment processors (e.g., Stripe, PayPal) and does not store credit card details on its own servers.\n\n`;
+                }
+
+                text += `#### 5. EXCLUSION OF WARRANTIES AND LIABILITY\n\n`;
+                text += `The COMPANY does not guarantee the availability and continuity of the operation of the WEBSITE. Whenever reasonably possible, it will give prior notice of any interruptions. The COMPANY shall not be liable for any damages that may arise from the lack of availability or continuity of the WEBSITE.\n\n`;
+                text += `The COMPANY does not guarantee the absence of errors in the CONTENT, nor the absence of viruses or other harmful elements. The COMPANY shall not be liable for any damages caused by computer viruses or other harmful elements.\n\n`;
+                text += `The COMPANY is not responsible for the use that USERS make of the CONTENTS of the WEBSITE. The USER assumes all responsibility for their use.\n\n`;
+
+                text += `#### 6. LINKS (HYPERLINKS)\n\n`;
+                text += `**Links to other websites:** The WEBSITE may include links to third-party sites. The COMPANY does not control, endorse, or guarantee the content, products, services, or practices of these third-party sites. Accessing these links is the sole responsibility of the USER.\n\n`;
+                text += `**Links from other websites to the WEBSITE:** Third parties who wish to include a link to the WEBSITE on their own pages must comply with current regulations and must not imply that the COMPANY endorses their products or services.\n\n`;
+
+                text += `#### 7. APPLICABLE LAW AND JURISDICTION\n\n`;
+                text += `These conditions shall be governed by the laws of Spain / the European Union. For the resolution of any dispute arising from access to or use of the WEBSITE, the COMPANY and the USER submit to the courts and tribunals of the USER's domicile, provided that the USER is considered a consumer. If not, the parties submit to the courts and tribunals of the city where the COMPANY is registered, expressly waiving any other jurisdiction.\n\n`;
+
+                let part2Start = 8;
+
+                if (industria === 'salud') {
+                    text += `#### 8. MEDICAL DISCLAIMER (CRITICAL)${badgeSalud}\n\n`;
+                    text += `**IMPORTANT DISCLAIMER:** The information provided on this WEBSITE, including any text, graphics, images, and other material, is for informational and educational purposes only and is not a substitute for professional medical advice, diagnosis, or treatment. Always seek the advice of your physician or other qualified health provider with any questions you may have regarding a medical condition. Never disregard professional medical advice or delay in seeking it because of something you have read on this WEBSITE. The COMPANY is not responsible for any health issues that may result from using this information.\n\n`;
+                    part2Start = 9;
+                } else if (industria === 'financiero') {
+                    text += `#### 8. NO PROFESSIONAL ADVICE DISCLAIMER${badgeFin}\n\n`;
+                    text += `The content on this WEBSITE is provided for general informational purposes only and does not constitute legal, financial, or tax advice. The COMPANY is not a law firm or financial advisory firm and does not provide professional services. Transmission of information from this site is not intended to create, and receipt does not constitute, a professional-client relationship. You should not act or refrain from acting on the basis of any content included in this site without seeking appropriate professional advice. The information on this WEBSITE may not reflect the most current legal/regulatory developments and is not guaranteed to be correct, complete, or up-to-date.\n\n`;
+                    part2Start = 9;
+                }
+
+                text += `--- \n\n`;
+                text += `### PART 2: PRIVACY POLICY (GDPR Compliant)\n\n`;
+                
+                text += `#### ${part2Start}. DATA CONTROLLER\n\n`;
+                text += `Who is responsible for the processing of your data?\n\n`;
+                text += `- **Identity:** ${pNombre}\n`;
+                text += `- **Tax ID:** ${pRnc}\n`;
+                text += `- **Address:** ${pDireccion}\n`;
+                text += `- **Email for Data Protection matters:** ${pEmail}\n\n`;
+                part2Start++;
+
+                text += `#### ${part2Start}. PURPOSE OF DATA PROCESSING\n\n`;
+                text += `What do we use your personal data for?\n\n`;
+                text += `At the COMPANY, we process the information provided by USERS for the following purposes:\n\n`;
+                text += `- **To manage and respond to inquiries and requests for information** made through our contact forms.\n`;
+                text += `- **To provide and manage the services offered** on the WEBSITE, including the creation and management of user accounts.\n`;
+                text += `- **To send commercial communications** about our products, services, and news, provided that the USER has given their explicit consent to do so (e.g., by subscribing to a newsletter).\n`;
+                text += `- **To manage job applications** submitted through the WEBSITE.\n`;
+                if (industria === 'salud') {
+                    text += `- **To manage the provision of our health/wellness services**, which may involve the processing of health-related data that you voluntarily provide to us for this purpose.${badgeSalud}\n`;
+                }
+                text += `- **To analyze browsing and usage patterns** to improve our website and services.\n\n`;
+                part2Start++;
+
+                text += `#### ${part2Start}. LEGITIMATION FOR PROCESSING\n\n`;
+                text += `Why are we allowed to process your data?\n\n`;
+                text += `The legal bases for processing your personal data are:\n\n`;
+                text += `- **The USER's consent:** For purposes such as sending commercial communications, using non-essential cookies, or processing a job application.\n`;
+                text += `- **The performance of a contract or pre-contractual arrangements:** To manage the services requested by the USER.\n`;
+                text += `- **The legitimate interest of the COMPANY:** To improve the user experience on the WEBSITE or to manage and respond to inquiries. You have the right to object to this processing.\n`;
+                text += `- **Compliance with legal obligations:** Such as tax or commercial law requirements.\n`;
+                if (industria === 'salud') {
+                    text += `- For the processing of any health data or other special categories of data, we rely on your **explicit consent**, which we will request separately and specifically. You have the right to withdraw this consent at any time.${badgeSalud}\n`;
+                }
+                text += `\n`;
+                part2Start++;
+
+                text += `#### ${part2Start}. DATA RETENTION PERIOD\n\n`;
+                text += `How long will we keep your data?\n\n`;
+                text += `Personal data will be kept for as long as necessary to fulfill the purpose for which it was collected and to meet any liabilities arising from that purpose. In general:\n\n`;
+                text += `- Data for managing inquiries will be kept for the time necessary to respond to them and for a maximum of one year thereafter.\n`;
+                text += `- Data for commercial communications will be kept until the USER requests their cancellation.\n`;
+                text += `- Data derived from the contractual relationship will be kept for the duration of the relationship and during the statute of limitations periods established by law (e.g., tax and commercial law).\n\n`;
+                part2Start++;
+
+                text += `#### ${part2Start}. RECIPIENTS OF DATA\n\n`;
+                text += `To whom will your data be communicated?\n\n`;
+                text += `Your data will not be transferred to third parties, unless there is a legal obligation to do so. However, the COMPANY may use third-party service providers (data processors) to carry out functions related to the purposes described above (e.g., hosting, email marketing platforms, payment gateways). We ensure that these third parties comply with data protection regulations.\n\n`;
+                if (industria === 'ecommerce') {
+                    text += `For the processing of payments, your data will be shared with the payment platform, which processes data in accordance with its own privacy policy and PCI-DSS security standards.${badgeEco}\n\n`;
+                }
+                part2Start++;
+
+                text += `#### ${part2Start}. USER RIGHTS\n\n`;
+                text += `What are your rights when you provide us with your data?\n\n`;
+                text += `Any USER has the right to obtain confirmation as to whether the COMPANY is processing personal data concerning them. Interested persons have the right to:\n\n`;
+                text += `- **Access** their data.\n`;
+                text += `- **Request rectification** of inaccurate data.\n`;
+                text += `- **Request deletion** (the "right to be forgotten") when, among other reasons, the data is no longer necessary for the purposes for which it was collected.\n`;
+                text += `- **Request the limitation of processing** in certain circumstances.\n`;
+                text += `- **Request data portability** (to receive your data in a structured, commonly used, and machine-readable format).\n`;
+                text += `- **Object to processing** based on the COMPANY's legitimate interest.\n\n`;
+                text += `USERS may exercise these rights by sending a written request to ${pEmail} or to the postal address provided in section 8. The request must include a copy of an identification document (ID/passport) and specify the right being exercised.\n\n`;
+                text += `If consent has been given for a specific purpose, the USER has the right to withdraw it at any time, without affecting the lawfulness of processing based on consent prior to its withdrawal. If a USER feels their rights have been violated, they have the right to file a complaint with the national Data Protection Supervisory Authority.\n\n`;
+                part2Start++;
+
+                text += `#### ${part2Start}. MODIFICATIONS TO THIS POLICY\n\n`;
+                text += `The COMPANY reserves the right to modify this Privacy Policy to adapt it to new legislation, jurisprudence, or industry practices. In such cases, the COMPANY will announce the changes on this page with reasonable notice before their implementation.\n`;
+            } 
+            // --------------------------------------------------------------------------------
+            // TEMPLATE: ESTADOS UNIDOS (US Generic / CCPA)
+            // --------------------------------------------------------------------------------
+            else if (region === 'us') {
+                text += `**Document Title: TERMS OF SERVICE AND PRIVACY POLICY**\n\n`;
+                text += `These terms and conditions outline the rules and regulations for the use of ${pNombre}'s Website, located at ${pUrl}.\n\n`;
+                text += `--- \n\n`;
+                text += `### PART 1: TERMS OF SERVICE\n\n`;
+                
+                text += `#### 1. ACCEPTANCE OF TERMS\n\n`;
+                text += `By accessing this website, we assume you accept these terms and conditions. Do not continue to use ${pUrl} if you do not agree to take all of the terms and conditions stated on this page.\n\n`;
+                
+                text += `#### 2. LICENSE & INTELLECTUAL PROPERTY\n\n`;
+                text += `Unless otherwise stated, ${pNombre} and/or its licensors own the intellectual property rights for all material on the website. All intellectual property rights are reserved. You may access this from ${pUrl} for your own personal use subjected to restrictions set in these terms and conditions.\n\n`;
+                
+                if (industria === 'ecommerce') {
+                    text += `#### 3. ACCOUNT RESPONSIBILITIES${badgeEco}\n\n`;
+                    text += `If you create an account on the Website, you are responsible for maintaining the security of your account, and you are fully responsible for all activities that occur under the account and any other actions taken in connection with it.\n\n`;
+                    text += `#### 4. PURCHASES AND PAYMENTS${badgeEco}\n\n`;
+                    text += `If you wish to purchase any product or service made available through the Service, you may be asked to supply certain information relevant to your Purchase including, without limitation, your credit card number, the expiration date of your credit card, your billing address, and your shipping information.\n\n`;
+                }
+
+                let nextUsIdx = industria === 'ecommerce' ? 5 : 3;
+
+                text += `#### ${nextUsIdx}. DISCLAIMER\n\n`;
+                text += `To the maximum extent permitted by applicable law, we exclude all representations, warranties and conditions relating to our website and the use of this website. Nothing in this disclaimer will limit or exclude our or your liability for death or personal injury, or limit or exclude our or your liability for fraud or fraudulent misrepresentation.\n\n`;
+                
+                if (industria === 'salud') {
+                    nextUsIdx++;
+                    text += `#### ${nextUsIdx}. MEDICAL DISCLAIMER${badgeSalud}\n\n`;
+                    text += `This site offers health, wellness, and nutritional information and is designed for educational purposes only. You should not rely on this information as a substitute for, nor does it replace, professional medical advice, diagnosis, or treatment. If you have any concerns or questions about your health, you should always consult with a physician or other health-care professional.\n\n`;
+                }
+
+                if (industria === 'financiero') {
+                    nextUsIdx++;
+                    text += `#### ${nextUsIdx}. FINANCIAL DISCLAIMER${badgeFin}\n\n`;
+                    text += `The information contained on this Website and the resources available for download through this website are not intended as, and shall not be understood or construed as, financial advice. We are not attorneys, accountants or financial advisors, nor are we holding ourselves out to be, and the information contained on this Website is not a substitute for financial advice from a professional who is aware of the facts and circumstances of your individual situation.\n\n`;
+                }
+
+                text += `--- \n\n`;
+                text += `### PART 2: PRIVACY POLICY (Including CCPA rights)\n\n`;
+                
+                text += `#### 1. INFORMATION COLLECTION\n\n`;
+                text += `We collect several different types of information for various purposes to provide and improve our Service to you. This includes Personal Data (such as Email address, First name and last name, Phone number, Address) and Usage Data.\n\n`;
+                
+                text += `#### 2. USE OF DATA\n\n`;
+                text += `${pNombre} uses the collected data for various purposes: To provide and maintain the Service, to notify you about changes to our Service, to allow you to participate in interactive features, to provide customer care and support, and to monitor the usage of the Service.\n\n`;
+
+                text += `#### 3. TRANSFER OF DATA\n\n`;
+                text += `Your information, including Personal Data, may be transferred to — and maintained on — computers located outside of your state, province, country or other governmental jurisdiction where the data protection laws may differ than those from your jurisdiction.\n\n`;
+
+                text += `#### 4. CALIFORNIA CONSUMER PRIVACY ACT (CCPA) RIGHTS\n\n`;
+                text += `If you are a California resident, you have the right to learn what data we collect about you, ask to delete your data and not to sell (share) it. To exercise your data protection rights, you can contact us at ${pEmail}. We do not sell your personal information.\n\n`;
+                
+                text += `#### 5. CONTACT US\n\n`;
+                text += `If you have any questions about this Privacy Policy, please contact us by email: ${pEmail}.\n`;
+
+            }
+            // --------------------------------------------------------------------------------
+            // TEMPLATE: REPÚBLICA DOMINICANA (Original Ley 172-13)
+            // --------------------------------------------------------------------------------
+            else {
+                text += `**Título del Documento: AVISO LEGAL, CONDICIONES DE USO Y POLÍTICA DE PRIVACIDAD**\n\n`;
+                text += `Este documento regula el uso del sitio web ${pUrl} (en adelante, el "SITIO WEB") propiedad de ${pNombre} (en adelante, la "EMPRESA" o el "TITULAR").\n\n`;
+                text += `--- \n\n`;
+                text += `### PARTE 1: AVISO LEGAL Y CONDICIONES DE USO\n\n`;
+                text += `#### 1. DATOS IDENTIFICATIVOS DEL TITULAR\n\n`;
+                text += `En cumplimiento con el deber de información establecido en la Ley No. 126-01 y la Ley No. 200-04 sobre Libre Acceso a la Información Pública, se informa que:\n\n`;
+                text += `- **Nombre o Razón Social:** ${pNombre}\n`;
+                text += `- **Número de Identificación (RNC o Cédula):** ${pRnc}\n`;
+                text += `- **Domicilio Social / Dirección:** ${pDireccion}\n`;
+                text += `- **Correo Electrónico de Contacto:** ${pEmail}\n`;
+                text += `- **Teléfono:** ${pTelefono}\n`;
+
+                if (industria === 'financiero') {
+                    text += `- **Supervisión y Regulación:** ${supervision || '[Indicar entidad supervisora, ej: Superintendencia de Bancos]'}${badgeFin}\n`;
+                }
+
+                text += `\n#### 2. OBJETO Y ÁMBITO DE APLICACIÓN\n\n`;
+                text += `Las presentes condiciones generales regulan el acceso, navegación y uso del SITIO WEB, así como las responsabilidades derivadas del uso de sus contenidos (en adelante, los "CONTENIDOS"), entendiendo por éstos los textos, gráficos, dibujos, diseños, códigos, software, fotografías, música, vídeos, bases de datos, imágenes, sonidos y cualquier otra creación protegida por las leyes nacionales e internacionales de propiedad intelectual e industrial.\n\n`;
+                text += `El acceso y uso del SITIO WEB atribuye la condición de USUARIO e implica la aceptación plena y sin reservas de todas y cada una de las disposiciones incluidas en este Aviso Legal en el momento mismo del acceso. La EMPRESA se reserva el derecho a modificar estas condiciones en cualquier momento, siendo dichas modificaciones aplicables desde su publicación en el SITIO WEB.\n\n`;
+
+                text += `#### 3. PROPIEDAD INTELECTUAL E INDUSTRIAL\n\n`;
+                text += `Todos los derechos de propiedad intelectual e industrial sobre el SITIO WEB y sus CONTENIDOS son titularidad de la EMPRESA o de terceros que han autorizado su uso. Queda expresamente prohibida la reproducción, distribución, comunicación pública, transformación o cualquier otra actividad que se realice con los CONTENIDOS, total o parcial, sin la autorización previa, expresa y por escrito de la EMPRESA, de conformidad con la Ley No. 65-00 sobre Derecho de Autor.\n\n`;
+                text += `**El USUARIO únicamente está autorizado a:**\n\n`;
+                text += `- Visualizar los CONTENIDOS.\n`;
+                text += `- Descargar o copiar los CONTENIDOS para su uso **exclusivamente personal y privado**, siempre que no sean transferidos a terceros ni se vulneren los derechos del TITULAR.\n\n`;
+                text += `Cualquier otro uso no autorizado expresamente será considerado un incumplimiento grave de los derechos de propiedad intelectual o industrial.\n\n`;
+
+                text += `#### 4. CONDICIONES DE USO Y RESPONSABILIDAD DEL USUARIO\n\n`;
+                text += `El USUARIO se obliga a hacer un uso correcto y lícito del SITIO WEB y de los CONTENIDOS, de conformidad con la ley, la moral, el orden público y las buenas costumbres generalmente aceptadas. El USUARIO se abstendrá de:\n\n`;
+                text += `- Reproducir, copiar, distribuir o comunicar públicamente los CONTENIDOS con fines comerciales.\n`;
+                text += `- Introducir o difundir virus informáticos o cualquier otro sistema que pueda dañar el SITIO WEB.\n`;
+                text += `- Intentar acceder, utilizar o manipular los datos de la EMPRESA o de otros usuarios.\n`;
+                text += `- Llevar a cabo actividades que constituyan publicidad ilícita o desleal.\n\n`;
+                text += `El USUARIO será el único responsable de las consecuencias, daños o perjuicios que se deriven del incumplimiento de estas obligaciones.\n\n`;
+
+                if (industria === 'ecommerce') {
+                    text += `#### 4.1 REGISTRO DE CUENTA Y SEGURIDAD${badgeEco}\n\n`;
+                    text += `Para acceder a ciertas funcionalidades del SITIO WEB, el USUARIO deberá registrarse creando una cuenta. El USUARIO se compromete a proporcionar información veraz y exacta, y a mantenerla actualizada. El USUARIO es responsable de mantener la confidencialidad de su contraseña y de todas las actividades que ocurran en su cuenta. El USUARIO se obliga a notificar inmediatamente a la EMPRESA cualquier uso no autorizado de su cuenta.\n\n`;
+                }
+
+                text += `#### 5. EXCLUSIÓN DE GARANTÍAS Y RESPONSABILIDAD\n\n`;
+                text += `La EMPRESA no garantiza la disponibilidad y continuidad del funcionamiento del SITIO WEB. Cuando sea razonablemente posible, advertirá previamente de las interrupciones. La EMPRESA no será responsable de los daños y perjuicios de cualquier naturaleza que puedan deberse a la falta de disponibilidad o continuidad del SITIO WEB.\n\n`;
+                text += `La EMPRESA no garantiza la ausencia de errores, virus o elementos lesivos en los CONTENIDOS. El USUARIO es responsable de disponer de herramientas adecuadas para la detección y desinfección de programas dañinos. La EMPRESA no será responsable de los daños producidos en el software, hardware o documentos electrónicos del USUARIO durante la navegación.\n\n`;
+                text += `La EMPRESA no controla ni garantiza la veracidad, exactitud o actualidad de los CONTENIDOS. La EMPRESA excluye cualquier responsabilidad por los daños y perjuicios que pudieran generarse por la falta de veracidad, exactitud o actualidad de la información proporcionada.\n\n`;
+
+                text += `#### 6. ENLACES (LINKS)\n\n`;
+                text += `**Enlaces a sitios web de terceros:** El SITIO WEB puede incluir enlaces a sitios web de terceros. La EMPRESA no controla, supervisa, ni garantiza el contenido, productos, servicios o prácticas de estos sitios. El acceso a estos enlaces es responsabilidad exclusiva del USUARIO.\n\n`;
+                text += `**Enlaces desde sitios web de terceros al SITIO WEB:** Cualquier persona o entidad que desee incluir un enlace desde su página web al SITIO WEB deberá cumplir con la normativa vigente y no podrá implicar que la EMPRESA patrocina o recomienda sus productos o servicios.\n\n`;
+
+                text += `#### 7. MENORES DE EDAD\n\n`;
+                text += `Para hacer uso de los servicios que requieran la recopilación de Datos Personales, los menores de edad deben obtener permiso previo por parte de sus padres, tutores o representantes legales, quienes serán considerados responsables de todos los actos realizados por los menores a su cargo.\n\n`;
+
+                text += `#### 8. PROCEDIMIENTO EN CASO DE ACTIVIDADES ILÍCITAS\n\n`;
+                text += `En el caso de que cualquier USUARIO o un tercero considere que existen hechos o circunstancias que revelen el carácter ilícito de la utilización de cualquier CONTENIDO, o de la violación de derechos de propiedad intelectual u otros derechos, deberá enviar una notificación a la EMPRESA a la dirección de correo electrónico ${pEmail} que contenga la siguiente información:\n\n`;
+                text += `- Datos personales del reclamante: nombre, número de cédula (o pasaporte, en caso de extranjeros), dirección y correo electrónico.\n`;
+                text += `- Especificación de la supuesta actividad ilícita y localización en el SITIO WEB.\n`;
+                text += `- Hechos o circunstancias que revelan el carácter ilícito de dicha actividad.\n`;
+                text += `- Declaración expresa de que la información proporcionada es exacta.\n\n`;
+
+                text += `#### 9. LEGISLACIÓN APLICABLE Y JURISDICCIÓN\n\n`;
+                text += `Las presentes condiciones se rigen en todas y cada una de sus partes por las leyes de la República Dominicana. Para la resolución de cualquier conflicto o controversia que derive del acceso o uso del SITIO WEB, la EMPRESA y el USUARIO se someten a los tribunales de la República Dominicana, con renuncia expresa a cualquier otro fuero que pudiera corresponderles.\n\n`;
+
+                if (industria === 'salud') {
+                    text += `#### 10. DESCARGO DE RESPONSABILIDAD MÉDICA${badgeSalud}\n\n`;
+                    text += `La información proporcionada en este SITIO WEB, incluyendo textos, gráficos, imágenes y cualquier otro material, es únicamente para fines informativos y educativos y no sustituye el consejo, diagnóstico o tratamiento médico profesional. Siempre busque el consejo de su médico u otro proveedor de salud calificado con cualquier pregunta que pueda tener con respecto a una condición médica. La EMPRESA no es responsable de ninguna consecuencia derivada del uso de esta información.\n\n`;
+                }
+
+                if (industria === 'financiero') {
+                    text += `#### 10. SIN ASESORAMIENTO PROFESIONAL${badgeFin}\n\n`;
+                    text += `El contenido de este SITIO WEB se proporciona únicamente con fines informativos generales y no constituye asesoramiento legal, financiero o de inversión. La EMPRESA no es una firma asesora y no ofrece servicios profesionales a través de esta web. La transmisión de información desde este sitio no pretende crear, y su recepción no constituye, una relación profesional-cliente. No debe actuar o abstenerse de actuar basándose en el contenido de este sitio sin buscar el asesoramiento profesional adecuado y adaptado a su situación específica.\n\n`;
+                }
+
+                let nextIndex = industria === 'salud' || industria === 'financiero' ? 11 : 10;
+
+                text += `--- \n\n`;
+                text += `### PARTE 2: POLÍTICA DE PRIVACIDAD Y PROTECCIÓN DE DATOS (Conforme a la Ley 172-13)\n\n`;
+                
+                text += `#### ${nextIndex}. IDENTIFICACIÓN DEL RESPONSABLE DEL TRATAMIENTO DE DATOS\n\n`;
+                text += `En cumplimiento de la **Ley No. 172-13 sobre Protección de Datos de Carácter Personal**, le informamos que el responsable del tratamiento de sus datos personales es:\n\n`;
+                text += `- **Responsable:** ${pNombre}\n`;
+                text += `- **RNC / Cédula:** ${pRnc}\n`;
+                text += `- **Dirección:** ${pDireccion}\n`;
+                text += `- **Correo Electrónico para temas de Datos:** ${pEmail}\n\n`;
+                nextIndex++;
+
+                text += `#### ${nextIndex}. DEFINICIÓN Y TIPO DE DATOS RECOPILADOS\n\n`;
+                text += `Se consideran Datos Personales cualquier información numérica, alfabética, gráfica, fotográfica, acústica o de cualquier otro tipo concerniente a personas físicas identificadas o identificables, de acuerdo a lo establecido en la Ley No. 172-13.\n\n`;
+                text += `La EMPRESA podrá recopilar los siguientes datos a través de los formularios del SITIO WEB:\n\n`;
+                text += `- **Datos de identificación:** Nombre, apellidos.\n`;
+                text += `- **Datos de contacto:** Correo electrónico, teléfono, dirección.\n`;
+                text += `- **Datos de identificación oficial:** Número de Cédula de Identidad y Electoral (cuando sea estrictamente necesario para la prestación de un servicio).\n\n`;
+                nextIndex++;
+
+                text += `#### ${nextIndex}. FINALIDAD DEL TRATAMIENTO DE LOS DATOS\n\n`;
+                text += `¿Para qué utilizamos sus datos personales?\n\n`;
+                text += `En la EMPRESA tratamos la información que nos proporcionan los USUARIOS para las siguientes finalidades:\n\n`;
+                text += `- Gestionar y responder a las consultas o solicitudes de información realizadas a través de los formularios de contacto.\n`;
+                text += `- Gestionar la prestación de los servicios ofrecidos en el SITIO WEB, incluyendo la creación y gestión de cuentas de usuario.\n`;
+                if (industria === 'ecommerce') {
+                    text += `- Gestionar el proceso de compra de productos o servicios, incluyendo el cobro, la logística de envío y la facturación electrónica (e-CF), en cumplimiento con las normativas tributarias de la Dirección General de Impuestos Internos (DGII).${badgeEco}\n`;
+                }
+                if (industria === 'salud') {
+                    text += `- Gestionar la prestación de nuestros servicios de salud/bienestar, lo que puede implicar el tratamiento de datos relacionados con su salud que usted nos proporciona voluntariamente y para los cuales se solicitará su consentimiento explícito.${badgeSalud}\n`;
+                }
+                text += `- Enviar comunicaciones comerciales y publicitarias sobre nuestros productos, servicios y novedades, **siempre que el USUARIO haya prestado su consentimiento expreso y previo** para ello (por ejemplo, al suscribirse a un boletín informativo).\n`;
+                text += `- Gestionar las solicitudes de empleo que se remitan a través del SITIO WEB.\n\n`;
+                nextIndex++;
+
+                text += `#### ${nextIndex}. LEGITIMACIÓN PARA EL TRATAMIENTO\n\n`;
+                text += `La base legal para el tratamiento de sus datos personales es:\n\n`;
+                text += `- El **consentimiento expreso** del USUARIO, manifestado mediante la acción de marcar una casilla o hacer clic en un botón de "Enviar", para finalidades específicas como el envío de comunicaciones comerciales o el tratamiento de datos de salud (categoría especial).\n`;
+                text += `- La **ejecución de un contrato o relación precontractual** para la gestión de los servicios solicitados por el USUARIO.\n`;
+                if (industria === 'salud') {
+                    text += `- Para el tratamiento de datos sensibles, como los de salud, nos basamos en el **consentimiento explícito e informado** del USUARIO, que será solicitado de forma independiente y específica, recordándole su derecho a retirarlo en cualquier momento.${badgeSalud}\n`;
+                }
+                text += `\n`;
+                nextIndex++;
+
+                text += `#### ${nextIndex}. MEDIDAS DE SEGURIDAD\n\n`;
+                text += `La EMPRESA es responsable del archivo de datos personales, así como también es la encargada del tratamiento de los mismos. La EMPRESA ha adoptado e implementado las medidas de índole técnica, organizativa y de seguridad necesarias para salvaguardar los datos de carácter personal y evitar su alteración, pérdida, tratamiento, consulta o acceso no autorizado, de conformidad con lo establecido en la Ley 172-13.\n\n`;
+                text += `La EMPRESA se compromete a mantener la confidencialidad respecto a los datos personales por parte de su personal que tenga acceso a ellos. Los datos personales no serán difundidos, distribuidos o comercializados con terceros para fines no relacionados con el servicio prestado, salvo obligación legal.\n\n`;
+                nextIndex++;
+
+                text += `#### ${nextIndex}. DERECHOS DEL USUARIO (ARCO)\n\n`;
+                text += `La Ley 172-13 garantiza a los titulares de los datos los derechos de **Acceso, Rectificación, Cancelación y Oposición (Derechos ARCO)**.\n\n`;
+                text += `Cualquier USUARIO tiene derecho a obtener confirmación sobre si la EMPRESA está tratando datos personales que les conciernan. Las personas interesadas tienen derecho a:\n\n`;
+                text += `- **Acceder** a sus datos.\n`;
+                text += `- **Solicitar la rectificación** de los datos inexactos.\n`;
+                text += `- **Solicitar la cancelación** de sus datos cuando, entre otros motivos, los datos ya no sean necesarios para los fines que fueron recogidos.\n`;
+                text += `- **Oponerse** al tratamiento de sus datos por motivos relacionados con su situación particular.\n\n`;
+                text += `Los USUARIOS podrán ejercitar estos derechos mediante el envío de una solicitud por escrito, acompañada de una copia de su cédula de identidad o pasaporte, a la siguiente dirección: ${pDireccion} o al correo electrónico: ${pEmail}. En la solicitud se deberá especificar el derecho que se desea ejercitar.\n\n`;
+                text += `**Nota Importante:** La Ley 172-13 no ha creado una autoridad de control o supervisión independiente (como una Agencia de Protección de Datos) ante la cual los ciudadanos puedan presentar una reclamación. Por lo tanto, la vía para la tutela de estos derechos es la judicial ordinaria.\n\n`;
+                nextIndex++;
+
+                text += `#### ${nextIndex}. CONSENTIMIENTO PARA EL ENVÍO DE COMUNICACIONES\n\n`;
+                text += `Al marcar la casilla correspondiente en los formularios del SITIO WEB, el USUARIO autoriza y consiente expresamente a la EMPRESA a enviarle comunicaciones comerciales y publicitarias por correo electrónico u otro medio equivalente. El USUARIO podrá revocar este consentimiento en cualquier momento mediante un sencillo y gratuito procedimiento de baja en cada comunicación recibida.\n\n`;
+                nextIndex++;
+
+                text += `#### ${nextIndex}. MODIFICACIÓN DE LA POLÍTICA DE PRIVACIDAD\n\n`;
+                text += `La EMPRESA se reserva el derecho de modificar la presente Política de Privacidad para adaptarla a novedades legislativas, jurisprudenciales o de prácticas del sector. En tales casos, la EMPRESA anunciará los cambios en esta página con una antelación razonable a su puesta en práctica.\n`;
+            }
+
+            return text;
+        }
+
+        // Markdown Parser for HTML insertion
+        function renderInlineFormatting(text) {
+            return text.replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold text-slate-900">$1</strong>');
+        }
+
+        function parseBadges(text) {
+            let content = text;
+            let badgeHtml = '';
+            if (content.includes('::BADGE_ECO::')) {
+                content = content.replace('::BADGE_ECO::', '');
+                badgeHtml = `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-100 text-indigo-800 uppercase tracking-wider print:hidden">E-commerce</span>`;
+            } else if (content.includes('::BADGE_SALUD::')) {
+                content = content.replace('::BADGE_SALUD::', '');
+                badgeHtml = `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-800 uppercase tracking-wider print:hidden">Salud</span>`;
+            } else if (content.includes('::BADGE_FIN::')) {
+                content = content.replace('::BADGE_FIN::', '');
+                badgeHtml = `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 uppercase tracking-wider print:hidden">Financiero</span>`;
+            }
+            return { content, badgeHtml };
+        }
+
+        function renderPreview() {
+            const rawText = getDocumentText(formData, true);
+            const lines = rawText.split('\n');
+            let htmlContent = '';
+
+            lines.forEach(line => {
+                if (line.startsWith('#### ')) {
+                    const { content, badgeHtml } = parseBadges(line.replace('#### ', ''));
+                    htmlContent += `<h4 class="text-lg font-bold text-slate-800 mt-6 mb-2 flex flex-wrap items-center gap-2">${renderInlineFormatting(content)}${badgeHtml}</h4>`;
+                } else if (line.startsWith('### ')) {
+                    htmlContent += `<h3 class="text-xl font-bold text-indigo-900 mt-8 mb-4 border-b pb-2">${line.replace('### ', '')}</h3>`;
+                } else if (line.startsWith('- ')) {
+                    const { content, badgeHtml } = parseBadges(line.substring(2));
+                    htmlContent += `<li class="ml-6 list-disc mb-1 text-slate-700 flex flex-wrap items-center gap-2"><span>${renderInlineFormatting(content)}</span>${badgeHtml}</li>`;
+                } else if (line.trim() === '---') {
+                    htmlContent += `<hr class="my-8 border-slate-300" />`;
+                } else if (line.trim() === '') {
+                    htmlContent += `<div class="h-2"></div>`;
+                } else {
+                    htmlContent += `<p class="mb-3 text-slate-700 text-justify leading-relaxed">${renderInlineFormatting(line)}</p>`;
+                }
+            });
+
+            previewContainer.innerHTML = htmlContent;
+        }
+
+        // Event Listeners
+        inputs.forEach(input => {
+            input.addEventListener('input', (e) => {
+                const { name, value, options, selectedIndex } = e.target;
+                formData[name] = value;
+
+                if (name === 'region') {
+                    if (value === 'es') {
+                        registroContainer.classList.remove('hidden');
+                    } else {
+                        registroContainer.classList.add('hidden');
+                        formData.registro = '';
+                        document.getElementById('registro').value = '';
+                    }
+                    if (!isFirstRun) showToast('🌍 Jurisdicción cambiada a ' + options[selectedIndex].text);
+                }
+
+                if (name === 'industria') {
+                    if (value === 'financiero') {
+                        supervisionContainer.classList.remove('hidden');
+                    } else {
+                        supervisionContainer.classList.add('hidden');
+                        formData.supervision = ''; // Limpiar estado
+                        document.getElementById('supervision').value = ''; // Limpiar input visual
+                    }
+
+                    if (!isFirstRun) {
+                        if (value === 'ecommerce') showToast('🛍️ Cláusulas E-commerce activadas');
+                        else if (value === 'salud') showToast('⚕️ Cláusulas de Salud activadas');
+                        else if (value === 'financiero') showToast('🏦 Cláusulas Financieras activadas');
+                        else showToast('📄 Plantilla General restaurada');
+                    }
+                }
+                
+                isFirstRun = false;
+                renderPreview();
+            });
+        });
+
+        // Actions
+        document.getElementById('btn-copy').addEventListener('click', () => {
+            const textToCopy = getDocumentText(formData, false); // false = sin badges
+            const textarea = document.createElement('textarea');
+            textarea.value = textToCopy;
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                showToast('¡Texto copiado al portapapeles!');
+            } catch (err) {
+                showToast('Error al copiar el texto.');
+            }
+            document.body.removeChild(textarea);
+        });
+
+        document.getElementById('btn-download').addEventListener('click', () => {
+            const textToDownload = getDocumentText(formData, false);
+            const blob = new Blob([textToDownload], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'aviso_legal_y_privacidad.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast('¡Archivo TXT descargado!');
+        });
+
+        document.getElementById('btn-print').addEventListener('click', () => {
+            window.print();
+        });
+
+        // Initialize preview on load
+        renderPreview();
+    </script>
+</body>
+</html>
