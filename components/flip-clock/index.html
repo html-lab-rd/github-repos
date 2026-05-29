@@ -1,0 +1,306 @@
+<style>
+    /* Reset and Variables for the widget */
+    #flip-clock-container {
+        --card-bg-top: #1a1a1a;
+        --card-bg-bottom: #0a0a0a;
+        --text-color: #ffffff;
+        --card-width: 80px;
+        --card-height: 100px;
+        --font-size: 3.5rem;
+        --anim-speed: 0.6s;
+        
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        font-family: system-ui, -apple-system, sans-serif;
+        margin: 0;
+        padding: 0;
+        user-select: none;
+    }
+
+    #flip-clock {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .unit {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .flip-card {
+        position: relative;
+        display: inline-flex;
+        flex-direction: column;
+        width: var(--card-width);
+        height: var(--card-height);
+        font-size: var(--font-size);
+        font-weight: 800;
+        perspective: 1000px;
+        background-color: transparent;
+    }
+
+    /* Central Separation Line */
+    .flip-card::before {
+        content: "";
+        position: absolute;
+        top: calc(50% - 1px); /* Precisely center the 2px line */
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background: #000000;
+        z-index: 100;
+    }
+
+    .top, .bottom, .leaf-front, .leaf-back {
+        position: absolute;
+        left: 0;
+        width: 100%;
+        height: 50%;
+        overflow: hidden;
+        backface-visibility: hidden;
+        -webkit-backface-visibility: hidden;
+        background-color: var(--card-bg-bottom);
+        color: var(--text-color);
+    }
+
+    .top, .leaf-front {
+        top: 0;
+        border-radius: 6px 6px 0 0;
+        background: var(--card-bg-top);
+    }
+
+    .bottom, .leaf-back {
+        bottom: 0;
+        border-radius: 0 0 6px 6px;
+        background: var(--card-bg-bottom);
+    }
+
+    /* PIXEL-PERFECT ALIGNMENT: 
+       Make the span exactly the height of the whole card, center the text with line-height, 
+       then snap it to the top or bottom of the 50% height hidden-overflow containers. */
+    .top span, .bottom span, .leaf-front span, .leaf-back span {
+        position: absolute;
+        left: 0;
+        width: 100%;
+        height: var(--card-height);
+        line-height: var(--card-height);
+        text-align: center;
+    }
+
+    .top span, .leaf-front span { top: 0; }
+    .bottom span, .leaf-back span { bottom: 0; }
+
+    /* STACKING LOGIC */
+    .top { z-index: 1; transform: translateZ(0); }
+    .bottom { z-index: 1; transform: translateZ(0); }
+
+    .leaf {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 50%;
+        z-index: 10;
+        transform-origin: bottom;
+        transform-style: preserve-3d;
+        transition: transform var(--anim-speed) ease-in;
+        transform: translateZ(0.1px) rotateX(0deg);
+    }
+
+    .leaf-front { 
+        z-index: 11; 
+        transform: rotateX(0deg); 
+    }
+    
+    .leaf-back { 
+        z-index: 12; 
+        transform: rotateX(-180deg); 
+        height: 100%; 
+        align-items: flex-start; 
+        top: 0; 
+    }
+
+    .flipping .leaf {
+        transform: translateZ(0.1px) rotateX(-180deg);
+    }
+
+    .label {
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.15em;
+        color: #999;
+        text-transform: uppercase;
+    }
+
+    #launch-message {
+        display: none;
+        text-align: center;
+        margin-top: 30px;
+        color: white;
+    }
+
+    .order-btn {
+        display: inline-block;
+        margin-top: 20px;
+        padding: 12px 30px;
+        background: #ffffff;
+        color: #000000;
+        text-decoration: none;
+        border-radius: 4px;
+        font-weight: bold;
+        transition: opacity 0.2s;
+    }
+    
+    .order-btn:hover { opacity: 0.8; }
+
+    @media (max-width: 480px) {
+        #flip-clock-container {
+            --card-width: 65px;
+            --card-height: 85px;
+            --font-size: 2.5rem;
+        }
+    }
+</style>
+
+<div id="flip-clock-container">
+    <div id="flip-clock">
+        <div class="unit">
+            <div class="flip-card" id="days">
+                <div class="top"><span></span></div>
+                <div class="leaf"><div class="leaf-front"><span></span></div><div class="leaf-back"><span></span></div></div>
+                <div class="bottom"><span></span></div>
+            </div>
+            <div class="label">Días</div>
+        </div>
+        <div class="unit">
+            <div class="flip-card" id="hours">
+                <div class="top"><span></span></div>
+                <div class="leaf"><div class="leaf-front"><span></span></div><div class="leaf-back"><span></span></div></div>
+                <div class="bottom"><span></span></div>
+            </div>
+            <div class="label">Horas</div>
+        </div>
+        <div class="unit">
+            <div class="flip-card" id="minutes">
+                <div class="top"><span></span></div>
+                <div class="leaf"><div class="leaf-front"><span></span></div><div class="leaf-back"><span></span></div></div>
+                <div class="bottom"><span></span></div>
+            </div>
+            <div class="label">Min</div>
+        </div>
+        <div class="unit">
+            <div class="flip-card" id="seconds">
+                <div class="top"><span></span></div>
+                <div class="leaf"><div class="leaf-front"><span></span></div><div class="leaf-back"><span></span></div></div>
+                <div class="bottom"><span></span></div>
+            </div>
+            <div class="label">Seg</div>
+        </div>
+    </div>
+
+    <div id="launch-message">
+        <h2 style="margin:0; font-size:1.5rem;">¡Evento Disponible!</h2>
+        <a href="#order" class="order-btn">ORDENAR LIBRO</a>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+<script>
+    (function() {
+        const targetDate = new Date("April 13, 2026 17:00:00").getTime();
+        let hasFired = false;
+        let isFirstRun = true;
+
+        function updateClock() {
+            const now = new Date().getTime();
+            const diff = targetDate - now;
+
+            if (diff <= 0) {
+                updateAll(0, 0, 0, 0);
+                activateExpiredState();
+                return;
+            }
+
+            const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const h = Math.floor((diff / (1000 * 60 * 60)) % 24);
+            const m = Math.floor((diff / (1000 * 60)) % 60);
+            const s = Math.floor((diff / 1000) % 60);
+
+            updateAll(d, h, m, s);
+            isFirstRun = false;
+        }
+
+        function updateAll(d, h, m, s) {
+            updateUnit("days", d);
+            updateUnit("hours", h);
+            updateUnit("minutes", m);
+            updateUnit("seconds", s);
+        }
+
+        function updateUnit(id, value) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            
+            const formatted = String(value).padStart(2, '0');
+            const bottomSpan = el.querySelector(".bottom span");
+            const currentDisplay = bottomSpan.textContent;
+
+            // First run setup
+            if (isFirstRun) {
+                el.querySelectorAll("span").forEach(s => s.textContent = formatted);
+                return;
+            }
+
+            // Trigger flip only if value changed
+            if (formatted !== currentDisplay) {
+                // Background top and back of leaf get the NEW value
+                el.querySelector(".top span").textContent = formatted;
+                el.querySelector(".leaf-back span").textContent = formatted;
+                
+                // Front of leaf and background bottom keep the OLD value
+                el.querySelector(".leaf-front span").textContent = currentDisplay;
+                bottomSpan.textContent = currentDisplay;
+
+                // Trigger 3D flip
+                el.classList.remove("flipping");
+                void el.offsetWidth; // Force CSS reflow
+                el.classList.add("flipping");
+
+                // CRITICAL FIX: When animation ends, explicitly set ALL spans
+                // to the new value so the idle state is completely solid.
+                setTimeout(() => {
+                    el.classList.remove("flipping");
+                    el.querySelectorAll("span").forEach(s => s.textContent = formatted);
+                }, 600); // 600ms matches --anim-speed
+            }
+        }
+
+        function activateExpiredState() {
+            const msg = document.getElementById("launch-message");
+            if (msg) msg.style.display = "block";
+            triggerConfettiOnce();
+        }
+
+        function triggerConfettiOnce() {
+            if (hasFired || sessionStorage.getItem("confetti_done")) return;
+            hasFired = true;
+            sessionStorage.setItem("confetti_done", "true");
+            const end = Date.now() + 2000;
+            (function frame() {
+                confetti({ particleCount: 3, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#ffffff', '#888888'] });
+                confetti({ particleCount: 3, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#ffffff', '#888888'] });
+                if (Date.now() < end) requestAnimationFrame(frame);
+            }());
+        }
+
+        updateClock();
+        setInterval(updateClock, 1000);
+    })();
+</script>
