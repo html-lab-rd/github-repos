@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sociedad Elite Club - Contadores</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Ensuring the background is completely transparent */
+        body, html {
+            background-color: transparent !important;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        /* Gold color variable for easy management */
+        :root {
+            --elite-gold: #966d1c;
+        }
+
+        .text-elite-gold {
+            color: var(--elite-gold);
+        }
+
+        /* Optional: Add a subtle text shadow to the numbers if placed on a light background later */
+        .counter-shadow {
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- 
+        Main Container: 
+        - w-full: takes full width of parent
+        - py-12: vertical padding
+        - flex justify-center: centers the inner grid
+    -->
+    <div class="w-full py-12 flex justify-center items-center">
+        
+        <!-- 
+            Grid Container:
+            - grid: uses CSS grid
+            - grid-cols-1 md:grid-cols-3: 1 column on mobile, 3 columns on tablet/desktop
+            - gap-8: spacing between columns
+            - text-center: centers text within columns
+            - max-w-6xl: limits maximum width for large screens
+            - w-full px-4: ensures it doesn't touch the edges on smaller screens
+        -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center max-w-6xl w-full px-4" id="counter-section">
+            
+            <!-- Column 1: Miembros -->
+            <div class="flex flex-col items-center justify-center p-6 rounded-lg transition-transform hover:scale-105 duration-300">
+                <div class="flex items-center justify-center mb-2">
+                    <span class="text-4xl md:text-5xl font-bold text-white counter-shadow mr-1">+</span>
+                    <!-- The number is written directly inside the span -->
+                    <span class="elite-counter-number text-4xl md:text-6xl font-black text-white counter-shadow">1000</span>
+                </div>
+                <h3 class="text-xl md:text-2xl font-bold text-elite-gold uppercase tracking-wider">Miembros</h3>
+            </div>
+
+            <!-- Column 2: Cursos -->
+            <div class="flex flex-col items-center justify-center p-6 rounded-lg transition-transform hover:scale-105 duration-300">
+                <div class="flex items-center justify-center mb-2">
+                    <span class="text-4xl md:text-5xl font-bold text-white counter-shadow mr-1">+</span>
+                    <!-- The number is written directly inside the span -->
+                    <span class="elite-counter-number text-4xl md:text-6xl font-black text-white counter-shadow">50</span>
+                </div>
+                <h3 class="text-xl md:text-2xl font-bold text-elite-gold uppercase tracking-wider">Cursos</h3>
+            </div>
+
+            <!-- Column 3: Herramientas -->
+            <div class="flex flex-col items-center justify-center p-6 rounded-lg transition-transform hover:scale-105 duration-300">
+                <div class="flex items-center justify-center mb-2">
+                    <span class="text-4xl md:text-5xl font-bold text-white counter-shadow mr-1">+</span>
+                    <!-- The number is written directly inside the span -->
+                    <span class="elite-counter-number text-4xl md:text-6xl font-black text-white counter-shadow">100</span>
+                </div>
+                <h3 class="text-xl md:text-2xl font-bold text-elite-gold uppercase tracking-wider">Herramientas</h3>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            // 1. Polling: BD can be slow to inject shortcodes. We check every 500ms until the HTML exists.
+            var checkInterval = setInterval(function() {
+                var counters = document.querySelectorAll('.elite-counter-number');
+                if (counters.length > 0) {
+                    clearInterval(checkInterval); 
+                    setupCounters(counters);
+                }
+            }, 500); 
+
+            function setupCounters(counters) {
+                if (window.eliteCountersInitialized) return;
+                window.eliteCountersInitialized = true;
+
+                var targets = [];
+
+                // 2. Anti-Stripping: Read the target number from the text itself, then set text to 0.
+                for (var i = 0; i < counters.length; i++) {
+                    var textVal = counters[i].innerText || counters[i].textContent;
+                    // Extract just the numbers to be safe
+                    targets[i] = parseInt(textVal.replace(/[^0-9]/g, ''), 10);
+                    counters[i].innerText = "0";
+                }
+
+                function runAnimation() {
+                    if (window.eliteCountersAnimated) return;
+                    window.eliteCountersAnimated = true;
+
+                    for (var j = 0; j < counters.length; j++) {
+                        (function(index) {
+                            var counter = counters[index];
+                            var target = targets[index];
+                            var duration = 2000; 
+                            var start = null;
+
+                            function step(timestamp) {
+                                if (!start) start = timestamp;
+                                var progress = Math.min((timestamp - start) / duration, 1);
+                                var easeOut = progress * (2 - progress); 
+                                
+                                counter.innerText = Math.floor(easeOut * target);
+                                
+                                if (progress < 1) {
+                                    window.requestAnimationFrame(step);
+                                } else {
+                                    counter.innerText = target;
+                                }
+                            }
+                            window.requestAnimationFrame(step);
+                        })(j);
+                    }
+                }
+
+                function checkScroll() {
+                    if (window.eliteCountersAnimated) return;
+                    var rect = counters[0].getBoundingClientRect();
+                    var isVisible = (rect.top <= (window.innerHeight || document.documentElement.clientHeight));
+                    
+                    if (isVisible) {
+                        window.removeEventListener('scroll', checkScroll);
+                        runAnimation();
+                    }
+                }
+
+                window.addEventListener('scroll', checkScroll);
+                checkScroll(); 
+
+                // 3. Ultimate Safety Net: Force animation after 2.5 seconds no matter what.
+                setTimeout(runAnimation, 2500);
+            }
+        })();
+    </script>
+</body>
+</html>
